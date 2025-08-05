@@ -1,0 +1,42 @@
+RewriteEngine On
+
+# Extended timeout configuration for Apache/cPanel
+<IfModule mod_proxy.c>
+    ProxyTimeout 1800
+</IfModule>
+
+<IfModule mod_fcgid.c>
+    FcgidIOTimeout 1800
+    FcgidBusyTimeout 1800
+    FcgidProcessLifeTime 1800
+    FcgidConnectTimeout 1800
+</IfModule>
+
+<IfModule mod_fastcgi.c>
+    FastCgiConfig -idle-timeout 1800
+</IfModule>
+
+# PHP timeout settings (if using PHP proxy)
+<IfModule mod_php7.c>
+    php_value max_execution_time 1800
+    php_value max_input_time 1800
+</IfModule>
+
+# Redirect all requests to the Flask app
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /cgi-bin/app.cgi/$1 [L]
+
+# Security headers
+Header set X-Content-Type-Options "nosniff"
+Header set X-Frame-Options "DENY"
+Header set X-XSS-Protection "1; mode=block"
+
+# Disable directory listing
+Options -Indexes
+
+# Protect sensitive files
+<FilesMatch "^(\.env|config\.py|requirements\.txt)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
